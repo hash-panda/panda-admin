@@ -2,7 +2,7 @@
   <div class="exception-container">
     <div class="exception-content">
       <div class="exception-image">
-        <img src="@/assets/images/403.png" alt="403" />
+        <img src="@/assets/images/403.svg" alt="403" />
       </div>
       <div class="exception-details">
         <h1>403</h1>
@@ -28,7 +28,7 @@ const goHome = () => {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped >
 .exception-container {
   display: flex;
   align-items: center;

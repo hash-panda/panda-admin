@@ -63,7 +63,7 @@ const handleLogin = async () => {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped >
 .login-container {
   display: flex;
   align-items: center;

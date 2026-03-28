@@ -8,7 +8,7 @@
 
 <script setup lang="ts"></script>
 
-<style scoped lang="less">
+<style scoped>
 .dashboard-container {
   padding: 24px;
 }

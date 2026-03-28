@@ -93,7 +93,7 @@ const handleLogout = () => {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped >
 .default-layout {
   .logo {
     height: 32px;
