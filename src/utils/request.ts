@@ -1,55 +1,31 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { ApiResponse } from '@/types/route';
 
 /**
- * API响应基础接口
+ * 创建 axios 实例
  */
-export interface ApiResponse<T = any> {
-  /** 响应码 */
-  code: number;
-  /** 响应消息 */
-  message: string;
-  /** 响应数据 */
-  data: T;
-  /** 时间戳 */
-  timestamp?: number;
-}
-
-/**
- * 请求配置接口
- */
-export interface RequestConfig extends AxiosRequestConfig {
-  /** 是否显示加载状态 */
-  showLoading?: boolean;
-  /** 是否显示错误提示 */
-  showError?: boolean;
-  /** 是否需要认证 */
-  needAuth?: boolean;
-}
-
-/**
- * 创建axios实例
- */
-const request: AxiosInstance = axios.create({
+const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 30000,
+  timeout: 15000,
   headers: {
-    'Content-Type': 'application/json;charset=UTF-8',
-  },
+    'Content-Type': 'application/json;charset=UTF-8'
+  }
 });
 
 /**
  * 请求拦截器
  */
-request.interceptors.request.use(
+service.interceptors.request.use(
   (config) => {
-    // 从localStorage获取token
-    const token = localStorage.getItem('access_token');
-    if (token && config.headers) {
+    // 从 localStorage 获取 token
+    const token = localStorage.getItem('token');
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -57,45 +33,45 @@ request.interceptors.request.use(
 /**
  * 响应拦截器
  */
-request.interceptors.response.use(
+service.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
-    const { data } = response;
-    
+    const { code, message, data } = response.data;
+
     // 根据业务状态码处理
-    if (data.code === 200 || data.code === 0) {
-      return data.data;
+    if (code === 200 || code === 0) {
+      return response.data;
+    } else {
+      console.error('API Error:', code, message);
+      return Promise.reject(new Error(message || '请求失败'));
     }
-    
-    // 处理业务错误
-    const error = new Error(data.message || '请求失败');
-    (error as any).code = data.code;
-    (error as any).response = response;
-    return Promise.reject(error);
   },
   (error) => {
-    // 处理HTTP错误
+    console.error('Response error:', error);
+    
+    // 处理 HTTP 错误状态码
     if (error.response) {
-      switch (error.response.status) {
+      const { status } = error.response;
+      switch (status) {
         case 401:
-          // 未授权，跳转到登录页
-          error.message = '未授权，请重新登录';
+          console.error('未授权，请登录');
+          // 跳转到登录页
           break;
         case 403:
-          error.message = '拒绝访问';
+          console.error('拒绝访问');
           break;
         case 404:
-          error.message = '请求的资源不存在';
+          console.error('请求地址不存在');
           break;
         case 500:
-          error.message = '服务器内部错误';
+          console.error('服务器内部错误');
           break;
         default:
-          error.message = `请求失败: ${error.response.status}`;
+          console.error(`请求错误: ${status}`);
       }
     } else if (error.request) {
-      error.message = '网络连接失败，请检查网络';
+      console.error('网络错误，请检查网络连接');
     } else {
-      error.message = error.message || '请求失败';
+      console.error('请求配置错误');
     }
     
     return Promise.reject(error);
@@ -103,31 +79,28 @@ request.interceptors.response.use(
 );
 
 /**
- * GET请求
+ * 封装请求方法
  */
-export function get<T = any>(url: string, config?: RequestConfig): Promise<T> {
-  return request.get(url, config);
-}
+export const request = {
+  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return service.get(url, config);
+  },
 
-/**
- * POST请求
- */
-export function post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<T> {
-  return request.post(url, data, config);
-}
+  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return service.post(url, data, config);
+  },
 
-/**
- * PUT请求
- */
-export function put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<T> {
-  return request.put(url, data, config);
-}
+  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return service.put(url, data, config);
+  },
 
-/**
- * DELETE请求
- */
-export function del<T = any>(url: string, config?: RequestConfig): Promise<T> {
-  return request.delete(url, config);
-}
+  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return service.delete(url, config);
+  },
 
-export default request;
+  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return service.patch(url, data, config);
+  }
+};
+
+export default service;
