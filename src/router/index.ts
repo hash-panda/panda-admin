@@ -1,83 +1,61 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import type { AppRouteModule } from './types';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 
-// Layouts
-const Layout = () => import('@/layouts/default/index.vue');
-
-// Routes
-export const basicRoutes: AppRouteModule[] = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'Root',
-    redirect: '/dashboard',
-    meta: {
-      title: 'Root',
-    },
+    redirect: '/dashboard'
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: Layout,
-    redirect: '/dashboard/home',
+    component: () => import('@/views/dashboard/index.vue'),
     meta: {
-      title: 'Dashboard',
-      icon: 'dashboard',
-    },
-    children: [
-      {
-        path: 'home',
-        name: 'DashboardHome',
-        component: () => import('@/views/dashboard/index.vue'),
-        meta: {
-          title: '首页',
-          affix: true,
-        },
-      },
-    ],
+      title: '仪表盘',
+      icon: 'DashboardOutlined'
+    }
   },
   {
-    path: '/ai-studio',
-    name: 'AIStudio',
-    component: Layout,
-    redirect: '/ai-studio/page-builder',
+    path: '/ai',
+    name: 'AI',
     meta: {
-      title: 'AI 工作室',
-      icon: 'robot',
+      title: 'AI 工具',
+      icon: 'RobotOutlined'
     },
     children: [
       {
         path: 'page-builder',
-        name: 'AIPageBuilder',
-        component: () => import('@/views/ai-studio/page-builder/index.vue'),
+        name: 'PageBuilder',
+        component: () => import('@/views/ai/page-builder.vue'),
         meta: {
           title: '页面构建器',
-        },
+          icon: 'BuildOutlined'
+        }
       },
       {
-        path: 'code-generator',
-        name: 'AICodeGenerator',
-        component: () => import('@/views/ai-studio/code-generator/index.vue'),
+        path: 'code-gen',
+        name: 'CodeGen',
+        component: () => import('@/views/ai/code-gen.vue'),
         meta: {
           title: '代码生成器',
-        },
+          icon: 'CodeOutlined'
+        }
       },
       {
         path: 'chat-assistant',
-        name: 'AIChatAssistant',
-        component: () => import('@/views/ai-studio/chat-assistant/index.vue'),
+        name: 'ChatAssistant',
+        component: () => import('@/views/ai/chat-assistant.vue'),
         meta: {
-          title: 'AI 助手',
-        },
-      },
-    ],
-  },
+          title: '聊天助手',
+          icon: 'MessageOutlined'
+        }
+      }
+    ]
+  }
 ];
 
-// Create router
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: basicRoutes as RouteRecordRaw[],
-  scrollBehavior: () => ({ left: 0, top: 0 }),
+  history: createWebHistory(),
+  routes
 });
 
 export default router;
